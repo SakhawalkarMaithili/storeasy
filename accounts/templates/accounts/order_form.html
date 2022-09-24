@@ -1,0 +1,24 @@
+{% extends 'accounts/main.html' %}
+
+{% load static %}
+
+{% block content %}
+
+<br>
+<div class="row">
+    <div class="col-md-6" style="margin: auto;">
+        <div class="card card-body">
+        <form action="" method="post">
+            {% csrf_token %}    <!-- This is just a way of sending data securely -->
+            {{formset.management_form}}
+            {{form}}            <!-- we have written 'form' here because it is the name of the variable defined in createOrder function in views.py -> form = OrderForm -->
+            
+
+            <input class="btn btn-primary" type="submit" name="submit">
+        </form>
+        </div>
+    </div>
+</div>
+
+
+{% endblock %}
