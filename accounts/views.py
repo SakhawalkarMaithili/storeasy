@@ -11,44 +11,62 @@ from django.contrib.auth import authenticate, login, logout
 
 from django.contrib import messages
 
+from django.contrib.auth.decorators import login_required
+
 from .models import *
 from .forms import OrderForm, CreateUserForm
 from .filters import OrderFilter
 
 # Create your views here.
 
-def register (request):
-    # form = UserCreationForm()
-    form = CreateUserForm()
+def registerPage (request):
+    # if a user is already logged in, he should not be able to access the register page
+    if request.user.is_authenticated:
+        return redirect ('home')
 
-    if request.method == 'POST':
-        # form = UserCreationForm (request.POST)
-        form = CreateUserForm (request.POST)
-        if form.is_valid():
-            form.save()
-            user = form.cleaned_data.get('username')
-            messages.success(request, "Account created for " + user)
-            return redirect('login')
+    else:
+        # form = UserCreationForm()
+        form = CreateUserForm()
 
-    context = {'form':form}
-    return render (request, 'accounts/register.html', context)
+        if request.method == 'POST':
+            # form = UserCreationForm (request.POST)
+            form = CreateUserForm (request.POST)
+            if form.is_valid():
+                form.save()
+                user = form.cleaned_data.get('username')
+                messages.success(request, "Account created for " + user)
+                return redirect('login')
 
-def login (request):
+        context = {'form':form}
+        return render (request, 'accounts/register.html', context)
 
-    if request.method == 'POST':
-        username = request.POST.get ('username')       # the data will be taken from the html form with field whose name = 'username'
-        password = request.POST.get ('password')
+def loginPage (request):
+    # if a user is already logged in, he should not be able to access the register page
+    if request.user.is_authenticated:
+        return redirect ('home')
 
-        user = authenticate (request, username=username, password=password)
+    else:        
+        if request.method == 'POST':
+            username = request.POST.get ('username')       # the data will be taken from the html form with field whose name = 'username'
+            password = request.POST.get ('password')
 
-        if user is not None:
-            login(request, user)
-            return redirect('home')
+            user = authenticate (request, username=username, password=password)
 
-    context = {}
-    return render (request, 'accounts/login.html')
+            if user is not None:
+                login(request, user)
+                return redirect('home')
+            else:
+                messages.info (request, 'Username or Password Incorrect')
 
+        context = {}
+        return render (request, 'accounts/login.html')
 
+def logoutUser (request):
+    logout(request)
+    # print (request)
+    return redirect ('login')
+
+@login_required (login_url = 'login')
 def home (request):
     orders = Order.objects.all()
     customers = Customer.objects.all()
@@ -72,6 +90,7 @@ def home (request):
 # def products (request):
 #     return render (request, 'accounts/products.html')
 
+@login_required (login_url = 'login')
 def products (request):
     products = Product.objects.all()
     return render (request, 'accounts/products.html', {'products':products})                # last parameter is a dictionary. We can use anything for key instead of 'products' (e.g. {'list' : products})
@@ -81,6 +100,7 @@ def products (request):
 # def customer (request):
 #     return HttpResponse ('customer')
 
+@login_required (login_url = 'login')
 def customer (request, pk):         # pk - primary key -> so that we can use the same template to display different customers ___NOTE__ The variable, i.e. pk in this case should be named the same as in the <str:pk> field in urls.py. e.g. If we have written <str:primkey>, we have to write def customer (request, primkey)
     customer = Customer.objects.get(id = pk)
     orders = customer.order_set.all()
@@ -96,6 +116,7 @@ def customer (request, pk):         # pk - primary key -> so that we can use the
 
 '''________________________________________________________________________________________________________________________'''
 
+@login_required (login_url = 'login')
 def createOrder (request, pk):
     # OrderFormSet = inlineformset_factory (Customer, Order, fields=('product', 'status'))    # Customer -> parent model; Order -> Child model; i.e. reference is from Order to Customer
     customer = Customer.objects.get(id=pk)
@@ -127,6 +148,7 @@ def createOrder (request, pk):
 
 '''________________________________________________________________________________________________________________________'''
 
+@login_required (login_url = 'login')
 def updateOrder (request, pk):
     order = Order.objects.get(id=pk)
 
@@ -144,6 +166,7 @@ def updateOrder (request, pk):
 
 '''________________________________________________________________________________________________________________________'''
 
+@login_required (login_url = 'login')
 def deleteOrder (request, pk):
     order = Order.objects.get(id=pk)
 
