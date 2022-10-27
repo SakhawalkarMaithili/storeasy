@@ -7,6 +7,7 @@ urlpatterns = [
     path('logout/', views.logoutUser, name='logout'),
 
     path('', views.home, name='home'),
+    path('user/', views.userPage, name='user-page'),
     path('products/', views.products, name='products'),
     path('customer/<str:pk>/', views.customer, name='customer'),              # refer customer function in views.py to get an idea of why we have written <str:pk>. NOTE we can also use int
     
